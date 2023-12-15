@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Meilleurs Champions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            background-color: #007bff;
+            color: white;
+            margin: 0;
+            padding: 20px 0;
+        }
+        .role-section {
+            margin-bottom: 30px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .champion {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            width: 180px;
+            background-color: #f9f9f9;
+        }
+        .champion img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        .champion-stats {
+            margin-top: 5px;
+            font-size: 14px;
+            text-align: left;
+            color: #555;
+        }
+        form {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Meilleure composition d'équipe</h1>
+    <h1>Choisissez le fichier CSV des champions</h1>
+    <form id="uploadForm">
+        <input type="file" id="fileInput" name="csvFile">
+        <input type="submit" value="Charger">
+    </form>
+    
+    <div id="results"></div> <!-- Les résultats seront affichés ici -->
+    
+    <script>
+    document.getElementById('uploadForm').addEventListener('submit', function(event){
+        event.preventDefault();
+        const file = document.getElementById('fileInput').files[0];
+        const formData = new FormData();
+        formData.append('csvFile', file);
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayChampions(data);
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    function displayChampions(data) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+
+        const roleOrder = ['TOP', 'JUNGLE', 'MID', 'ADC', 'SUPPORT'];
+
+        roleOrder.forEach(role => {
+            const champions = data[role];
+            if (!champions) return;
+
+            const roleDiv = document.createElement('div');
+            roleDiv.classList.add('role-section');
+            roleDiv.innerHTML = `<h2>${role}</h2>`;
+
+            champions.forEach(champion => {
+                const championDiv = document.createElement('div');
+                championDiv.classList.add('champion');
+
+                const img = document.createElement('img');
+                img.src = champion.ImagePath;
+                img.alt = champion.Name;
+
+                const statsDiv = document.createElement('div');
+                statsDiv.classList.add('champion-stats');
+                statsDiv.innerHTML = `<strong>${champion.Name}</strong><br>
+                                      Win %: ${champion['Win %']}<br>
+                                      Pick %: ${champion['Pick %']}<br>
+                                      KDA: ${champion.KDA}`;
+
+                championDiv.appendChild(img);
+                championDiv.appendChild(statsDiv);
+                roleDiv.appendChild(championDiv);
+            });
+
+            resultsDiv.appendChild(roleDiv);
+        });
+    
+    }
+    </script>
+</body>
+</html>
